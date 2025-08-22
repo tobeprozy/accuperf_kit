@@ -3,7 +3,7 @@
 PyTorch interface and performance sanity tests using pytest.
 """
 
-from typing import Tuple
+from typing import Tuple, List
 
 import pytest
 import torch
@@ -85,7 +85,7 @@ def test_matrix_multiplication_cpu_vs_cuda(shape: Tuple[int, int], cosine_thresh
 
 
 @pytest.mark.cpu
-def test_conv2d_cpu(shapes: list[tuple[int, ...]], results_collector) -> None:
+def test_conv2d_cpu(shapes: List[Tuple[int, ...]], results_collector) -> None:
     batch_size, channels, height, width = shapes[2]
     input_cpu = generate_random_data((batch_size, channels, height, width), "cpu")
     kernel_cpu = generate_random_data((channels, channels, 3, 3), "cpu")
@@ -112,7 +112,7 @@ def test_conv2d_cpu(shapes: list[tuple[int, ...]], results_collector) -> None:
 
 
 @pytest.mark.cuda
-def test_conv2d_cpu_vs_cuda(shapes: list[tuple[int, ...]], cosine_threshold: float, results_collector) -> None:
+def test_conv2d_cpu_vs_cuda(shapes: List[Tuple[int, ...]], cosine_threshold: float, results_collector) -> None:
     if not torch.cuda.is_available():
         pytest.skip("CUDA not available")
 
