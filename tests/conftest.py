@@ -2,9 +2,10 @@
 """Shared pytest fixtures and configuration for tests."""
 
 import os
-import sys
 from pathlib import Path
 from typing import Dict, List, Tuple
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 import pytest
 import torch
