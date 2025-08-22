@@ -3,7 +3,7 @@
 
 import os
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -22,7 +22,7 @@ def set_deterministic_seed() -> None:
 
 
 @pytest.fixture(scope="session")
-def devices() -> Dict[str, typing.Optional[str]]:
+def devices() -> Dict[str, Optional[str]]:
     """Return available device mapping for tests."""
     return {
         "cpu": "cpu",
