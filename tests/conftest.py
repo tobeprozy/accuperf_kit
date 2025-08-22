@@ -12,12 +12,6 @@ from src.results import ResultsCollector, BenchmarkRecord
 from datetime import datetime
 
 
-# Ensure project root is on sys.path so that `src` is importable in all envs
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-
 @pytest.fixture(autouse=True, scope="function")
 def set_deterministic_seed() -> None:
     """Set global RNG seeds for determinism across CPU/CUDA each test."""

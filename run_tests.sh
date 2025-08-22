@@ -3,6 +3,9 @@
 echo "PyTorch接口测试脚本"
 echo "=================="
 
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+
+
 # 检查Python是否安装
 if ! command -v python3 &> /dev/null; then
     echo "错误: 未找到Python3，请先安装Python3"
@@ -20,6 +23,8 @@ if [ $? -ne 0 ]; then
         exit 1
     fi
 fi
+
+
 
 echo "依赖检查完成"
 echo ""
