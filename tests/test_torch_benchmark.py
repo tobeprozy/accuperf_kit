@@ -17,15 +17,6 @@ from src.torch_utils import (
 from src.results import BenchmarkRecord
 
 
-def to_cuda_or_skip(t: torch.Tensor) -> torch.Tensor:
-    """Move tensor to CUDA or skip the test if backend/device is not usable."""
-    try:
-        return t.to("cuda")
-    except Exception as exc:  # noqa: BLE001 - test infra should be defensive
-        pytest.skip(f"CUDA not usable in this environment: {exc}")
-        raise
-
-
 @pytest.mark.cpu
 @pytest.mark.parametrize("shape", [(100, 100), (1000, 1000)])
 def test_matrix_multiplication_cpu_only(shape: Tuple[int, int], results_collector) -> None:
@@ -65,8 +56,8 @@ def test_matrix_multiplication_cpu_vs_cuda(shape: Tuple[int, int], cosine_thresh
     b_cpu = generate_random_data(shape, "cpu")
     cpu_time, cpu_result = measure_time(lambda: torch.mm(a_cpu, b_cpu))
 
-    a_cuda = to_cuda_or_skip(a_cpu)
-    b_cuda = to_cuda_or_skip(b_cpu)
+    a_cuda = a_cpu.to("cuda")
+    b_cuda = b_cpu.to("cuda")
     cuda_time, cuda_result = measure_time(lambda: torch.mm(a_cuda, b_cuda))
 
     similarity = cosine_similarity(cuda_result, cpu_result.to("cuda"))
@@ -131,8 +122,8 @@ def test_conv2d_cpu_vs_cuda(shapes: List[Tuple[int, ...]], cosine_threshold: flo
     kernel_cpu = generate_random_data((channels, channels, 3, 3), "cpu")
     cpu_time, cpu_result = measure_time(lambda: F.conv2d(input_cpu, kernel_cpu, padding=1))
 
-    input_cuda = to_cuda_or_skip(input_cpu)
-    kernel_cuda = to_cuda_or_skip(kernel_cpu)
+    input_cuda = input_cpu.to("cuda")
+    kernel_cuda = kernel_cpu.to("cuda")
     cuda_time, cuda_result = measure_time(lambda: F.conv2d(input_cuda, kernel_cuda, padding=1))
 
     similarity = cosine_similarity(cuda_result, cpu_result.to("cuda"))
@@ -190,7 +181,7 @@ def test_softmax_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float, re
         pytest.skip("CUDA not available")
     input_cpu = generate_random_data(shape, "cpu")
     cpu_time, cpu_result = measure_time(lambda: F.softmax(input_cpu, dim=1))
-    input_cuda = to_cuda_or_skip(input_cpu)
+    input_cuda = input_cpu.to("cuda")
     cuda_time, cuda_result = measure_time(lambda: F.softmax(input_cuda, dim=1))
     similarity = cosine_similarity(cuda_result, cpu_result.to("cuda"))
     assert similarity > cosine_threshold
@@ -247,7 +238,7 @@ def test_relu_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float, resul
         pytest.skip("CUDA not available")
     input_cpu = generate_random_data(shape, "cpu")
     cpu_time, cpu_result = measure_time(lambda: F.relu(input_cpu))
-    input_cuda = to_cuda_or_skip(input_cpu)
+    input_cuda = input_cpu.to("cuda")
     cuda_time, cuda_result = measure_time(lambda: F.relu(input_cuda))
     similarity = cosine_similarity(cuda_result, cpu_result.to("cuda"))
     assert similarity > cosine_threshold
