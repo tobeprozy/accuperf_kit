@@ -22,13 +22,12 @@ def set_deterministic_seed() -> None:
 
 
 @pytest.fixture(scope="session")
-def devices() -> Dict[str, str | None]:
+def devices() -> Dict[str, Optional[str]]:
     """Return available device mapping for tests."""
     return {
         "cpu": "cpu",
         "cuda": "cuda" if torch.cuda.is_available() else None,
     }
-
 
 @pytest.fixture(scope="session")
 def shapes() -> List[Tuple[int, ...]]:
