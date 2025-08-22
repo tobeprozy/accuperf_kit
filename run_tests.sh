@@ -33,7 +33,7 @@ echo "开始运行测试..."
 echo ""
 
 echo "使用pytest运行测试..."
-pytest -v | cat
+pytest -s -v | cat
 
 echo ""
 echo "测试完成！"
