@@ -14,11 +14,12 @@ from src.torch_utils import (
     measure_time,
     cosine_similarity,
 )
+from src.results import BenchmarkRecord
 
 
 @pytest.mark.cpu
 @pytest.mark.parametrize("shape", [(100, 100), (1000, 1000)])
-def test_matrix_multiplication_cpu_only(shape: Tuple[int, int]) -> None:
+def test_matrix_multiplication_cpu_only(shape: Tuple[int, int], results_collector) -> None:
     duration, result = measure_time(
         lambda: torch.mm(
             generate_random_data(shape, "cpu"),
@@ -28,10 +29,23 @@ def test_matrix_multiplication_cpu_only(shape: Tuple[int, int]) -> None:
     assert result.shape == (shape[0], shape[1])
     assert duration >= 0.0
 
+    results_collector.add(
+        BenchmarkRecord(
+            test_name="test_matrix_multiplication_cpu_only",
+            operation="matmul",
+            shape=str(shape),
+            device_pair="cpu-only",
+            cpu_time_s=duration,
+            cuda_time_s=None,
+            speedup=None,
+            cosine_similarity=None,
+        )
+    )
+
 
 @pytest.mark.cuda
 @pytest.mark.parametrize("shape", [(100, 100), (1000, 1000)])
-def test_matrix_multiplication_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float) -> None:
+def test_matrix_multiplication_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float, results_collector) -> None:
     if not torch.cuda.is_available():
         pytest.skip("CUDA not available")
 
@@ -48,9 +62,22 @@ def test_matrix_multiplication_cpu_vs_cuda(shape: Tuple[int, int], cosine_thresh
     assert similarity > cosine_threshold
     assert cuda_time >= 0.0 and cpu_time >= 0.0
 
+    results_collector.add(
+        BenchmarkRecord(
+            test_name="test_matrix_multiplication_cpu_vs_cuda",
+            operation="matmul",
+            shape=str(shape),
+            device_pair="cpu-vs-cuda",
+            cpu_time_s=cpu_time,
+            cuda_time_s=cuda_time,
+            speedup=(cpu_time / cuda_time) if cuda_time > 0 else None,
+            cosine_similarity=similarity,
+        )
+    )
+
 
 @pytest.mark.cpu
-def test_conv2d_cpu(shapes: list[tuple[int, ...]]) -> None:
+def test_conv2d_cpu(shapes: list[tuple[int, ...]], results_collector) -> None:
     batch_size, channels, height, width = shapes[2]
     input_cpu = generate_random_data((batch_size, channels, height, width), "cpu")
     kernel_cpu = generate_random_data((channels, channels, 3, 3), "cpu")
@@ -58,9 +85,22 @@ def test_conv2d_cpu(shapes: list[tuple[int, ...]]) -> None:
     assert result.shape == (batch_size, channels, height, width)
     assert duration >= 0.0
 
+    results_collector.add(
+        BenchmarkRecord(
+            test_name="test_conv2d_cpu",
+            operation="conv2d",
+            shape=str((batch_size, channels, height, width)),
+            device_pair="cpu-only",
+            cpu_time_s=duration,
+            cuda_time_s=None,
+            speedup=None,
+            cosine_similarity=None,
+        )
+    )
+
 
 @pytest.mark.cuda
-def test_conv2d_cpu_vs_cuda(shapes: list[tuple[int, ...]], cosine_threshold: float) -> None:
+def test_conv2d_cpu_vs_cuda(shapes: list[tuple[int, ...]], cosine_threshold: float, results_collector) -> None:
     if not torch.cuda.is_available():
         pytest.skip("CUDA not available")
 
@@ -78,19 +118,45 @@ def test_conv2d_cpu_vs_cuda(shapes: list[tuple[int, ...]], cosine_threshold: flo
     assert similarity > cosine_threshold
     assert cuda_time >= 0.0 and cpu_time >= 0.0
 
+    results_collector.add(
+        BenchmarkRecord(
+            test_name="test_conv2d_cpu_vs_cuda",
+            operation="conv2d",
+            shape=str((batch_size, channels, height, width)),
+            device_pair="cpu-vs-cuda",
+            cpu_time_s=cpu_time,
+            cuda_time_s=cuda_time,
+            speedup=(cpu_time / cuda_time) if cuda_time > 0 else None,
+            cosine_similarity=similarity,
+        )
+    )
+
 
 @pytest.mark.cpu
 @pytest.mark.parametrize("shape", [(1000, 1000)])
-def test_softmax_cpu(shape: Tuple[int, int]) -> None:
+def test_softmax_cpu(shape: Tuple[int, int], results_collector) -> None:
     input_cpu = generate_random_data(shape, "cpu")
     duration, result = measure_time(lambda: F.softmax(input_cpu, dim=1))
     assert result.shape == shape
     assert duration >= 0.0
 
+    results_collector.add(
+        BenchmarkRecord(
+            test_name="test_softmax_cpu",
+            operation="softmax",
+            shape=str(shape),
+            device_pair="cpu-only",
+            cpu_time_s=duration,
+            cuda_time_s=None,
+            speedup=None,
+            cosine_similarity=None,
+        )
+    )
+
 
 @pytest.mark.cuda
 @pytest.mark.parametrize("shape", [(1000, 1000)])
-def test_softmax_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float) -> None:
+def test_softmax_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float, results_collector) -> None:
     if not torch.cuda.is_available():
         pytest.skip("CUDA not available")
     input_cpu = generate_random_data(shape, "cpu")
@@ -101,19 +167,45 @@ def test_softmax_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float) ->
     assert similarity > cosine_threshold
     assert cuda_time >= 0.0 and cpu_time >= 0.0
 
+    results_collector.add(
+        BenchmarkRecord(
+            test_name="test_softmax_cpu_vs_cuda",
+            operation="softmax",
+            shape=str(shape),
+            device_pair="cpu-vs-cuda",
+            cpu_time_s=cpu_time,
+            cuda_time_s=cuda_time,
+            speedup=(cpu_time / cuda_time) if cuda_time > 0 else None,
+            cosine_similarity=similarity,
+        )
+    )
+
 
 @pytest.mark.cpu
 @pytest.mark.parametrize("shape", [(1000, 1000)])
-def test_relu_cpu(shape: Tuple[int, int]) -> None:
+def test_relu_cpu(shape: Tuple[int, int], results_collector) -> None:
     input_cpu = generate_random_data(shape, "cpu")
     duration, result = measure_time(lambda: F.relu(input_cpu))
     assert result.shape == shape
     assert duration >= 0.0
 
+    results_collector.add(
+        BenchmarkRecord(
+            test_name="test_relu_cpu",
+            operation="relu",
+            shape=str(shape),
+            device_pair="cpu-only",
+            cpu_time_s=duration,
+            cuda_time_s=None,
+            speedup=None,
+            cosine_similarity=None,
+        )
+    )
+
 
 @pytest.mark.cuda
 @pytest.mark.parametrize("shape", [(1000, 1000)])
-def test_relu_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float) -> None:
+def test_relu_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float, results_collector) -> None:
     if not torch.cuda.is_available():
         pytest.skip("CUDA not available")
     input_cpu = generate_random_data(shape, "cpu")
@@ -123,5 +215,18 @@ def test_relu_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float) -> No
     similarity = cosine_similarity(cuda_result, cpu_result.to("cuda"))
     assert similarity > cosine_threshold
     assert cuda_time >= 0.0 and cpu_time >= 0.0
+
+    results_collector.add(
+        BenchmarkRecord(
+            test_name="test_relu_cpu_vs_cuda",
+            operation="relu",
+            shape=str(shape),
+            device_pair="cpu-vs-cuda",
+            cpu_time_s=cpu_time,
+            cuda_time_s=cuda_time,
+            speedup=(cpu_time / cuda_time) if cuda_time > 0 else None,
+            cosine_similarity=similarity,
+        )
+    )
 
 

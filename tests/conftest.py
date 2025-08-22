@@ -8,6 +8,8 @@ from typing import Dict, List, Tuple
 
 import pytest
 import torch
+from src.results import ResultsCollector, BenchmarkRecord
+from datetime import datetime
 
 
 # Ensure project root is on sys.path so that `src` is importable in all envs
@@ -60,4 +62,17 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "cuda: tests that require CUDA if available")
     config.addinivalue_line("markers", "cpu: tests that run on CPU")
 
+
+@pytest.fixture(scope="session")
+def results_collector(tmp_path_factory: pytest.TempPathFactory) -> ResultsCollector:
+    """Session-scoped results collector that writes outputs at the end."""
+    # Save under ./artifacts/<YYYYmmdd_HHMMSS>
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    artifacts_dir = PROJECT_ROOT / "artifacts" / timestamp
+    collector = ResultsCollector(artifacts_dir)
+    yield collector
+    # Write outputs at session end
+    json_file = collector.write_json()
+    csv_file = collector.write_csv()
+    print(f"Results written to: {json_file} and {csv_file}")
 
