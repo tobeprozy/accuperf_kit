@@ -29,6 +29,8 @@ def test_matrix_multiplication_cpu_only(shape: Tuple[int, int], results_collecto
     assert result.shape == (shape[0], shape[1])
     assert duration >= 0.0
 
+    print(f"[CPU] matmul shape={shape} time={duration:.6f}s")
+
     results_collector.add(
         BenchmarkRecord(
             test_name="test_matrix_multiplication_cpu_only",
@@ -62,6 +64,12 @@ def test_matrix_multiplication_cpu_vs_cuda(shape: Tuple[int, int], cosine_thresh
     assert similarity > cosine_threshold
     assert cuda_time >= 0.0 and cpu_time >= 0.0
 
+    speedup = (cpu_time / cuda_time) if cuda_time > 0 else None
+    print(
+        f"[CPU↔CUDA] matmul shape={shape} cpu={cpu_time:.6f}s cuda={cuda_time:.6f}s "
+        f"speedup={speedup:.2f}x sim={similarity:.6f}"
+    )
+
     results_collector.add(
         BenchmarkRecord(
             test_name="test_matrix_multiplication_cpu_vs_cuda",
@@ -70,7 +78,7 @@ def test_matrix_multiplication_cpu_vs_cuda(shape: Tuple[int, int], cosine_thresh
             device_pair="cpu-vs-cuda",
             cpu_time_s=cpu_time,
             cuda_time_s=cuda_time,
-            speedup=(cpu_time / cuda_time) if cuda_time > 0 else None,
+            speedup=speedup,
             cosine_similarity=similarity,
         )
     )
@@ -84,6 +92,10 @@ def test_conv2d_cpu(shapes: list[tuple[int, ...]], results_collector) -> None:
     duration, result = measure_time(lambda: F.conv2d(input_cpu, kernel_cpu, padding=1))
     assert result.shape == (batch_size, channels, height, width)
     assert duration >= 0.0
+
+    print(
+        f"[CPU] conv2d input={(batch_size, channels, height, width)} time={duration:.6f}s"
+    )
 
     results_collector.add(
         BenchmarkRecord(
@@ -118,6 +130,12 @@ def test_conv2d_cpu_vs_cuda(shapes: list[tuple[int, ...]], cosine_threshold: flo
     assert similarity > cosine_threshold
     assert cuda_time >= 0.0 and cpu_time >= 0.0
 
+    speedup = (cpu_time / cuda_time) if cuda_time > 0 else None
+    print(
+        f"[CPU↔CUDA] conv2d input={(batch_size, channels, height, width)} cpu={cpu_time:.6f}s "
+        f"cuda={cuda_time:.6f}s speedup={speedup:.2f}x sim={similarity:.6f}"
+    )
+
     results_collector.add(
         BenchmarkRecord(
             test_name="test_conv2d_cpu_vs_cuda",
@@ -126,7 +144,7 @@ def test_conv2d_cpu_vs_cuda(shapes: list[tuple[int, ...]], cosine_threshold: flo
             device_pair="cpu-vs-cuda",
             cpu_time_s=cpu_time,
             cuda_time_s=cuda_time,
-            speedup=(cpu_time / cuda_time) if cuda_time > 0 else None,
+            speedup=speedup,
             cosine_similarity=similarity,
         )
     )
@@ -139,6 +157,8 @@ def test_softmax_cpu(shape: Tuple[int, int], results_collector) -> None:
     duration, result = measure_time(lambda: F.softmax(input_cpu, dim=1))
     assert result.shape == shape
     assert duration >= 0.0
+
+    print(f"[CPU] softmax shape={shape} time={duration:.6f}s")
 
     results_collector.add(
         BenchmarkRecord(
@@ -167,6 +187,12 @@ def test_softmax_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float, re
     assert similarity > cosine_threshold
     assert cuda_time >= 0.0 and cpu_time >= 0.0
 
+    speedup = (cpu_time / cuda_time) if cuda_time > 0 else None
+    print(
+        f"[CPU↔CUDA] softmax shape={shape} cpu={cpu_time:.6f}s cuda={cuda_time:.6f}s "
+        f"speedup={speedup:.2f}x sim={similarity:.6f}"
+    )
+
     results_collector.add(
         BenchmarkRecord(
             test_name="test_softmax_cpu_vs_cuda",
@@ -175,7 +201,7 @@ def test_softmax_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float, re
             device_pair="cpu-vs-cuda",
             cpu_time_s=cpu_time,
             cuda_time_s=cuda_time,
-            speedup=(cpu_time / cuda_time) if cuda_time > 0 else None,
+            speedup=speedup,
             cosine_similarity=similarity,
         )
     )
@@ -188,6 +214,8 @@ def test_relu_cpu(shape: Tuple[int, int], results_collector) -> None:
     duration, result = measure_time(lambda: F.relu(input_cpu))
     assert result.shape == shape
     assert duration >= 0.0
+
+    print(f"[CPU] relu shape={shape} time={duration:.6f}s")
 
     results_collector.add(
         BenchmarkRecord(
@@ -216,6 +244,12 @@ def test_relu_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float, resul
     assert similarity > cosine_threshold
     assert cuda_time >= 0.0 and cpu_time >= 0.0
 
+    speedup = (cpu_time / cuda_time) if cuda_time > 0 else None
+    print(
+        f"[CPU↔CUDA] relu shape={shape} cpu={cpu_time:.6f}s cuda={cuda_time:.6f}s "
+        f"speedup={speedup:.2f}x sim={similarity:.6f}"
+    )
+
     results_collector.add(
         BenchmarkRecord(
             test_name="test_relu_cpu_vs_cuda",
@@ -224,7 +258,7 @@ def test_relu_cpu_vs_cuda(shape: Tuple[int, int], cosine_threshold: float, resul
             device_pair="cpu-vs-cuda",
             cpu_time_s=cpu_time,
             cuda_time_s=cuda_time,
-            speedup=(cpu_time / cuda_time) if cuda_time > 0 else None,
+            speedup=speedup,
             cosine_similarity=similarity,
         )
     )
