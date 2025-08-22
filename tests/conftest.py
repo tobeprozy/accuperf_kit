@@ -16,6 +16,14 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 
+@pytest.fixture(autouse=True, scope="function")
+def set_deterministic_seed() -> None:
+    """Set global RNG seeds for determinism across CPU/CUDA each test."""
+    torch.manual_seed(1234)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(1234)
+
+
 @pytest.fixture(scope="session")
 def devices() -> Dict[str, str | None]:
     """Return available device mapping for tests."""
